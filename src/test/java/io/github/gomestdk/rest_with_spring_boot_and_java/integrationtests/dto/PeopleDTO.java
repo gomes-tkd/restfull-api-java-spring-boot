@@ -2,11 +2,14 @@ package io.github.gomestdk.rest_with_spring_boot_and_java.integrationtests.dto;
 
 import jakarta.xml.bind.annotation.XmlRootElement;
 
+import java.io.Serial;
 import java.io.Serializable;
 import java.util.Objects;
 
 @XmlRootElement
 public class PeopleDTO implements Serializable {
+
+    @Serial
     private static final long serialVersionUID = 1L;
 
     private Long id;

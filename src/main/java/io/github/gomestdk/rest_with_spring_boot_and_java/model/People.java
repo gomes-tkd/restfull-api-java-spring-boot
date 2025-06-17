@@ -2,12 +2,15 @@ package io.github.gomestdk.rest_with_spring_boot_and_java.model;
 
 import jakarta.persistence.*;
 
+import java.io.Serial;
 import java.io.Serializable;
 import java.util.Objects;
 
 @Entity
 @Table(name = "people")
 public class People implements Serializable {
+
+    @Serial
     private static final long serialVersionUID = 1L;
 
     @Id

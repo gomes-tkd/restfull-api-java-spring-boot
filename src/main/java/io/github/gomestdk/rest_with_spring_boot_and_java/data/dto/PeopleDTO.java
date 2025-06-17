@@ -5,12 +5,15 @@ import jakarta.persistence.Column;
 import org.springframework.hateoas.RepresentationModel;
 import org.springframework.hateoas.server.core.Relation;
 
+import java.io.Serial;
 import java.io.Serializable;
 import java.util.Objects;
 
 @Relation(collectionRelation = "people")
 @JsonPropertyOrder({"id", "first_name", "last_name", "gender", "address", "enabled"})
 public class PeopleDTO extends RepresentationModel<PeopleDTO> implements Serializable {
+
+    @Serial
     private static final long serialVersionUID = 1L;
 
     @Column(name = "id")

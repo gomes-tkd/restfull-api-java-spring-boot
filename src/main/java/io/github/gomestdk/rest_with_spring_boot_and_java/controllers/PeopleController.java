@@ -2,7 +2,7 @@ package io.github.gomestdk.rest_with_spring_boot_and_java.controllers;
 
 import io.github.gomestdk.rest_with_spring_boot_and_java.controllers.docs.PeopleControllerDocs;
 import io.github.gomestdk.rest_with_spring_boot_and_java.data.dto.PeopleDTO;
-import io.github.gomestdk.rest_with_spring_boot_and_java.unittests.services.PeopleService;
+import io.github.gomestdk.rest_with_spring_boot_and_java.services.PeopleService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
@@ -14,7 +14,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-//@CrossOrigin(origins = "http://localhost:8080")
+@CrossOrigin(origins = "http://localhost:8080")
 @RestController
 @RequestMapping("/api/people/v1")
 @Tag(name = "People", description = "Endpoints for Managing People")
@@ -62,7 +62,6 @@ public class PeopleController implements PeopleControllerDocs {
         return ResponseEntity.ok(peopleService.findPeopleByName(firstName, pageable));
     }
 
-    //    @CrossOrigin(origins = "http://localhost:8080")
     @GetMapping(
             value = "/{id}",
             produces = {
@@ -76,7 +75,6 @@ public class PeopleController implements PeopleControllerDocs {
         return peopleService.findById(id);
     }
 
-//    @CrossOrigin(origins = {"http://localhost:8080", "https://github.com/gomes-tkd"})
     @PostMapping(
             produces = {
                     MediaType.APPLICATION_JSON_VALUE,

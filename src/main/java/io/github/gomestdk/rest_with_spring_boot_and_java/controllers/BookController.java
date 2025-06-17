@@ -2,7 +2,7 @@ package io.github.gomestdk.rest_with_spring_boot_and_java.controllers;
 
 import io.github.gomestdk.rest_with_spring_boot_and_java.controllers.docs.BookControllerDocs;
 import io.github.gomestdk.rest_with_spring_boot_and_java.data.dto.BookDTO;
-import io.github.gomestdk.rest_with_spring_boot_and_java.unittests.services.BookService;
+import io.github.gomestdk.rest_with_spring_boot_and_java.services.BookService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
@@ -14,6 +14,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+@CrossOrigin(origins = "http://localhost:8080")
 @RestController
 @RequestMapping("/api/books/v1")
 @Tag(name = "Books", description = "Endpoints for Managing Books")

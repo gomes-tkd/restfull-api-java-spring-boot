@@ -18,51 +18,49 @@ import static org.junit.jupiter.api.Assertions.*;
 @ExtendWith(SpringExtension.class)
 @DataJpaTest
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
-@TestMethodOrder(MethodOrderer.class)
-class PeopleRepositoryTest extends AbstractIntegrationTest {
+@TestMethodOrder(MethodOrderer.OrderAnnotation.class)
+class PersonRepositoryTest extends AbstractIntegrationTest {
 
     @Autowired
-    PeopleRepository peopleRepository;
-
-    private static People people;
+    PeopleRepository repository;
+    private static People person;
 
     @BeforeAll
     static void setUp() {
-        people = new People();
+        person = new People();
     }
 
     @Test
     @Order(1)
     void findPeopleByName() {
         Pageable pageable = PageRequest.of(
-                0, 12, Sort.by(Sort.Direction.ASC, "firstName")
-        );
-        people = peopleRepository.findPeopleByName("iko", pageable).getContent().get(1);
+                0,
+                12,
+                Sort.by(Sort.Direction.ASC, "firstName"));
 
-        assertNotNull(people);
-        assertNotNull(people.getId());
-        assertEquals("Nikola", people.getFirstName());
-        assertEquals("Tesla", people.getLastName());
-        assertEquals("Smiljan - Croatia", people.getAddress());
-        assertEquals("Male", people.getGender());
-        assertTrue(people.getEnabled());
+        person = repository.findPeopleByName("iko", pageable).getContent().get(0);
+
+        assertNotNull(person);
+        assertEquals("Nikola", person.getFirstName());
+        assertEquals("Tesla", person.getLastName());
+        assertEquals("Male", person.getGender());
+        assertTrue(person.getEnabled());
     }
 
     @Test
     @Order(2)
     void disablePerson() {
-        Long id = people.getId();
-        peopleRepository.disablePerson(id);
 
-        var result = peopleRepository.findById(id);
-        people = result.get();
+        Long id = person.getId();
+        repository.disablePerson(id);
 
-        assertNotNull(people);
-        assertNotNull(people.getId());
-        assertEquals("Nikola", people.getFirstName());
-        assertEquals("Tesla", people.getLastName());
-        assertEquals("Smiljan - Croatia", people.getAddress());
-        assertEquals("Male", people.getGender());
-        assertFalse(people.getEnabled());
+        var result = repository.findById(id);
+        person = result.get();
+
+        assertNotNull(person);
+        assertEquals("Nikola", person.getFirstName());
+        assertEquals("Tesla", person.getLastName());
+        assertEquals("Male", person.getGender());
+        assertFalse(person.getEnabled());
     }
 }

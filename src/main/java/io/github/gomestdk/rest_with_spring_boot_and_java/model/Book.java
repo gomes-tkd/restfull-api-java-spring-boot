@@ -2,6 +2,7 @@ package io.github.gomestdk.rest_with_spring_boot_and_java.model;
 
 import jakarta.persistence.*;
 
+import java.io.Serial;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.Objects;
@@ -9,6 +10,8 @@ import java.util.Objects;
 @Entity
 @Table(name = "books")
 public class Book implements Serializable {
+
+    @Serial
     private final static long serialVersionUID = 1L;
 
     @Id

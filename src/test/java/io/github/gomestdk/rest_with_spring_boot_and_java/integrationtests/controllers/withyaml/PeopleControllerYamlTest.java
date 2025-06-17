@@ -13,86 +13,52 @@ import io.restassured.filter.log.LogDetail;
 import io.restassured.filter.log.RequestLoggingFilter;
 import io.restassured.filter.log.ResponseLoggingFilter;
 import io.restassured.http.ContentType;
+import io.restassured.response.Response;
 import io.restassured.specification.RequestSpecification;
 import org.junit.jupiter.api.*;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 
-import java.lang.reflect.Type;
+import org.yaml.snakeyaml.Yaml;
+
 import java.util.List;
+import java.util.Map;
 
 import static io.restassured.RestAssured.given;
-import static junit.framework.TestCase.assertTrue;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.*;
+import static org.hamcrest.Matchers.is;
+import static org.junit.jupiter.api.Assertions.*;;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.DEFINED_PORT)
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
-class PeopleControllerYamlTest extends AbstractIntegrationTest {
-
+class PersonControllerYamlTest extends AbstractIntegrationTest {
 
     private static RequestSpecification specification;
     private static YAMLMapper objectMapper;
 
-    private static PeopleDTO peopleDTO;
+    private static PeopleDTO person;
 
     @BeforeAll
     static void setUp() {
         objectMapper = new YAMLMapper();
-
-        peopleDTO = new PeopleDTO();
+        person = new PeopleDTO();
     }
+
     @Test
     @Order(1)
-    void create() throws JsonProcessingException {
+    void createTest() throws JsonProcessingException {
         mockPerson();
 
         specification = new RequestSpecBuilder()
                 .addHeader(TestConfigs.HEADER_PARAM_ORIGIN, TestConfigs.ORIGIN_LOCALHOST)
-                .setBasePath("/api/people/v1")
+                .setBasePath("/api/person/v1")
                 .setPort(TestConfigs.SERVER_PORT)
-                .setPort(TestConfigs.SERVER_PORT)
-                    .addFilter(new RequestLoggingFilter(LogDetail.ALL))
-                    .addFilter(new ResponseLoggingFilter(LogDetail.ALL))
+                .addFilter(new RequestLoggingFilter(LogDetail.ALL))
+                .addFilter(new ResponseLoggingFilter(LogDetail.ALL))
                 .build();
 
-        PeopleDTO createdPerson = given().config(
-            RestAssuredConfig.config()
-            .encoderConfig(
-                EncoderConfig.encoderConfig()
-                    .encodeContentTypeAs(MediaType.APPLICATION_YAML_VALUE, ContentType.TEXT)
-            )
-        )
-            .spec(specification)
-            .contentType(MediaType.APPLICATION_YAML_VALUE).accept(MediaType.APPLICATION_YAML_VALUE)
-                        .body(peopleDTO, objectMapper)
-                                .when().post().then().statusCode(200).contentType(MediaType.APPLICATION_YAML_VALUE).extract().body().as(PeopleDTO.class, objectMapper);
-
-        peopleDTO = createdPerson;
-
-
-        assertTrue(createdPerson.getId() > 0);
-
-        assertNotNull(createdPerson);
-        assertNotNull(createdPerson.getId());
-        assertNotNull(createdPerson.getFirstName());
-        assertNotNull(createdPerson.getLastName());
-        assertNotNull(createdPerson.getAddress());
-        assertNotNull(createdPerson.getAddress());
-
-        assertEquals("Lt. Jose", createdPerson.getFirstName());
-        assertEquals("Gomes", createdPerson.getLastName());
-        assertEquals("Vancouver - Canada", createdPerson.getAddress());
-        assertEquals("Male", createdPerson.getGender());
-        assertTrue(createdPerson.getEnabled());
-
-    }
-
-    @Test
-    @Order(2)
-    void updateTest() throws JsonProcessingException {
-        peopleDTO.setLastName("Gomes G.");
-
-        PeopleDTO createdPerson = given().config(
+        var createdPerson = given().config(
                         RestAssuredConfig.config()
                                 .encoderConfig(
                                         EncoderConfig.encoderConfig().
@@ -100,7 +66,43 @@ class PeopleControllerYamlTest extends AbstractIntegrationTest {
                 ).spec(specification)
                 .contentType(MediaType.APPLICATION_YAML_VALUE)
                 .accept(MediaType.APPLICATION_YAML_VALUE)
-                .body(peopleDTO, objectMapper)
+                .body(person, objectMapper)
+                .when()
+                .post()
+                .then()
+                .statusCode(200)
+                .contentType(MediaType.APPLICATION_YAML_VALUE)
+                .extract()
+                .body()
+                .as(PeopleDTO.class, objectMapper);
+
+        person = createdPerson;
+
+        assertNotNull(createdPerson.getId());
+        Assertions.assertTrue(createdPerson.getId() > 0);
+
+        assertEquals("Linus", createdPerson.getFirstName());
+        assertEquals("Torvalds", createdPerson.getLastName());
+        assertEquals("Helsinki - Finland", createdPerson.getAddress());
+        assertEquals("Male", createdPerson.getGender());
+        Assertions.assertTrue(createdPerson.getEnabled());
+
+    }
+
+    @Test
+    @Order(2)
+    void updateTest() throws JsonProcessingException {
+        person.setLastName("Benedict Torvalds");
+
+        var createdPerson = given().config(
+                        RestAssuredConfig.config()
+                                .encoderConfig(
+                                        EncoderConfig.encoderConfig().
+                                                encodeContentTypeAs(MediaType.APPLICATION_YAML_VALUE, ContentType.TEXT))
+                ).spec(specification)
+                .contentType(MediaType.APPLICATION_YAML_VALUE)
+                .accept(MediaType.APPLICATION_YAML_VALUE)
+                .body(person, objectMapper)
                 .when()
                 .put()
                 .then()
@@ -108,25 +110,26 @@ class PeopleControllerYamlTest extends AbstractIntegrationTest {
                 .contentType(MediaType.APPLICATION_YAML_VALUE)
                 .extract()
                 .body()
-                .as((Type) PeopleDTO.class, objectMapper);
+                .as(PeopleDTO.class, objectMapper);
 
-        peopleDTO = createdPerson;
+        person = createdPerson;
 
         assertNotNull(createdPerson.getId());
-        assertTrue(createdPerson.getId() > 0);
+        Assertions.assertTrue(createdPerson.getId() > 0);
 
-        assertEquals("Lt. Jose", createdPerson.getFirstName());
-        assertEquals("Gomes G.", createdPerson.getLastName());
-        assertEquals("Vancouver - Canada", createdPerson.getAddress());
+        assertEquals("Linus", createdPerson.getFirstName());
+        assertEquals("Benedict Torvalds", createdPerson.getLastName());
+        assertEquals("Helsinki - Finland", createdPerson.getAddress());
         assertEquals("Male", createdPerson.getGender());
-        assertTrue(createdPerson.getEnabled());
+        Assertions.assertTrue(createdPerson.getEnabled());
+
     }
 
     @Test
     @Order(3)
-    void findById() throws JsonProcessingException {
+    void findByIdTest() throws JsonProcessingException {
 
-        PeopleDTO createdPerson = given().config(
+        var createdPerson = given().config(
                         RestAssuredConfig.config()
                                 .encoderConfig(
                                         EncoderConfig.encoderConfig().
@@ -134,7 +137,7 @@ class PeopleControllerYamlTest extends AbstractIntegrationTest {
                 ).spec(specification)
                 .contentType(MediaType.APPLICATION_YAML_VALUE)
                 .accept(MediaType.APPLICATION_YAML_VALUE)
-                .pathParam("id", peopleDTO.getId())
+                .pathParam("id", person.getId())
                 .when()
                 .get("{id}")
                 .then()
@@ -144,35 +147,32 @@ class PeopleControllerYamlTest extends AbstractIntegrationTest {
                 .body()
                 .as(PeopleDTO.class, objectMapper);
 
-        peopleDTO = createdPerson;
-
+        person = createdPerson;
 
         assertNotNull(createdPerson.getId());
-        assertTrue(createdPerson.getId() > 0);
+        Assertions.assertTrue(createdPerson.getId() > 0);
 
-        assertEquals("Lt. Jose", createdPerson.getFirstName());
-        assertEquals("Gomes G.", createdPerson.getLastName());
-        assertEquals("Vancouver - Canada", createdPerson.getAddress());
+        assertEquals("Linus", createdPerson.getFirstName());
+        assertEquals("Benedict Torvalds", createdPerson.getLastName());
+        assertEquals("Helsinki - Finland", createdPerson.getAddress());
         assertEquals("Male", createdPerson.getGender());
-        assertTrue(createdPerson.getEnabled());
+        Assertions.assertTrue(createdPerson.getEnabled());
     }
-
 
     @Test
     @Order(4)
     void disableTest() throws JsonProcessingException {
 
-        PeopleDTO createdPerson = given().config(
+        var createdPerson = given().config(
                         RestAssuredConfig.config()
                                 .encoderConfig(
                                         EncoderConfig.encoderConfig().
                                                 encodeContentTypeAs(MediaType.APPLICATION_YAML_VALUE, ContentType.TEXT))
                 ).spec(specification)
-                .contentType(MediaType.APPLICATION_YAML_VALUE)
                 .accept(MediaType.APPLICATION_YAML_VALUE)
-                .pathParam("id", peopleDTO.getId())
+                .pathParam("id", person.getId())
                 .when()
-                .get("{id}")
+                .patch("{id}")
                 .then()
                 .statusCode(200)
                 .contentType(MediaType.APPLICATION_YAML_VALUE)
@@ -180,14 +180,14 @@ class PeopleControllerYamlTest extends AbstractIntegrationTest {
                 .body()
                 .as(PeopleDTO.class, objectMapper);
 
-        peopleDTO = createdPerson;
+        person = createdPerson;
 
         assertNotNull(createdPerson.getId());
-        assertTrue(createdPerson.getId() > 0);
+        Assertions.assertTrue(createdPerson.getId() > 0);
 
-        assertEquals("Lt. Jose", createdPerson.getFirstName());
-        assertEquals("Gomes G.", createdPerson.getLastName());
-        assertEquals("Vancouver - Canada", createdPerson.getAddress());
+        assertEquals("Linus", createdPerson.getFirstName());
+        assertEquals("Benedict Torvalds", createdPerson.getLastName());
+        assertEquals("Helsinki - Finland", createdPerson.getAddress());
         assertEquals("Male", createdPerson.getGender());
         assertFalse(createdPerson.getEnabled());
     }
@@ -195,19 +195,23 @@ class PeopleControllerYamlTest extends AbstractIntegrationTest {
     @Test
     @Order(5)
     void deleteTest() throws JsonProcessingException {
-        String content = given(specification)
-                .pathParam("id", peopleDTO.getId())
-                .when().delete("{id}")
-                .then().statusCode(204).toString();
 
+        given(specification)
+                .pathParam("id", person.getId())
+                .when()
+                .delete("{id}")
+                .then()
+                .statusCode(204);
     }
+
 
     @Test
     @Order(6)
     void findAllTest() throws JsonProcessingException {
 
-        PagedModelPeople response = given(specification)
+        var response = given(specification)
                 .accept(MediaType.APPLICATION_YAML_VALUE)
+                .queryParams("page", 6 , "size", 10, "direction", "asc")
                 .when()
                 .get()
                 .then()
@@ -217,39 +221,127 @@ class PeopleControllerYamlTest extends AbstractIntegrationTest {
                 .body()
                 .as(PagedModelPeople.class, objectMapper);
 
+        List<PeopleDTO> people = response.getContent();
 
+        PeopleDTO personOne = people.getFirst();
+
+        assertNotNull(personOne.getId());
+        Assertions.assertTrue(personOne.getId() > 0);
+
+        assertEquals("Anton", personOne.getFirstName());
+        assertEquals("Rollo", personOne.getLastName());
+        assertEquals("8 Norway Maple Lane", personOne.getAddress());
+        assertEquals("Male", personOne.getGender());
+        assertFalse(personOne.getEnabled());
+
+        PeopleDTO personFour = people.get(4);
+
+        assertNotNull(personFour.getId());
+        Assertions.assertTrue(personFour.getId() > 0);
+
+        assertEquals("Ari", personFour.getFirstName());
+        assertEquals("Pask", personFour.getLastName());
+        assertEquals("8 Darwin Lane", personFour.getAddress());
+        assertEquals("Male", personFour.getGender());
+        Assertions.assertTrue(personFour.getEnabled());
+    }
+
+    @Test
+    @Order(7)
+    void hateoasTest() throws JsonProcessingException {
+
+        Response response = given(specification)
+                .accept(MediaType.APPLICATION_YAML_VALUE)
+                .queryParams("page", 6 , "size", 10, "direction", "asc")
+                .when()
+                .get()
+                .then()
+                .statusCode(200)
+                .contentType(MediaType.APPLICATION_YAML_VALUE)
+                .extract()
+                .response();
+
+        String yaml = response.getBody().asString();
+
+        Yaml yamlParser = new Yaml();
+        Map<String, Object> parsedYaml = yamlParser.load(yaml);
+
+        List<Map<String, Object>> content = (List<Map<String, Object>>) parsedYaml.get("content");
+        for (Map<String, Object> person : content) {
+            List<Map<String, String>> links = (List<Map<String, String>>) person.get("links");
+            for (Map<String, String> link : links) {
+                assertThat("HATEOAS link rel is missing", link, hasKey("rel"));
+                assertThat("HATEOAS link href is missing", link, hasKey("href"));
+                assertThat("HATEOAS link type is missing", link, hasKey("type"));
+
+                assertThat("HATEOAS link has an invalid URL", link.get("href"), matchesPattern("https?://.+/api/person/v1.*"));
+            }
+        }
+
+        Map<String, Object> page = (Map<String, Object>) parsedYaml.get("page");
+        assertThat("Page number is incorrect", page.get("number"), is(6));
+        assertThat("Page size is incorrect", page.get("size"), is(10));
+
+        Integer totalElements = Integer.parseInt(page.get("totalElements").toString());
+        Integer totalPages = Integer.parseInt(page.get("totalPages").toString());
+
+        assertThat("Total elements is missing or invalid", totalElements, is(greaterThan(0)));
+        assertThat("Total pages is missing or invalid", totalPages, is(greaterThan(0)));
+
+        List<Map<String, String>> pageLinks = (List<Map<String, String>>) parsedYaml.get("links");
+        for (Map<String, String> pageLink : pageLinks) {
+            assertThat("Page link href is missing", pageLink, hasKey("href"));
+            assertThat("Page link has an invalid URL", pageLink.get("href"), matchesPattern("https?://.+/api/person/v1.*"));
+        }
+    }
+
+    @Test
+    @Order(8)
+    void findByNameTestTest() throws JsonProcessingException {
+
+        var response = given(specification)
+                .accept(MediaType.APPLICATION_YAML_VALUE)
+                .pathParam("firstName", "and")
+                .queryParams("page", 0, "size", 12, "direction", "asc")
+                .when()
+                .get("findPeopleByName/{firstName}")
+                .then()
+                .statusCode(200)
+                .contentType(MediaType.APPLICATION_YAML_VALUE)
+                .extract()
+                .body()
+                .as(PagedModelPeople.class, objectMapper);
 
         List<PeopleDTO> people = response.getContent();
 
         PeopleDTO personOne = people.getFirst();
 
-
         assertNotNull(personOne.getId());
-        assertTrue(personOne.getId() > 0);
+        Assertions.assertTrue(personOne.getId() > 0);
 
-        assertEquals("Ayrton", personOne.getFirstName());
-        assertEquals("Senna", personOne.getLastName());
-        assertEquals("São Paulo - Brasil", personOne.getAddress());
+        assertEquals("Alessandro", personOne.getFirstName());
+        assertEquals("McFaul", personOne.getLastName());
+        assertEquals("5 Lukken Plaza", personOne.getAddress());
         assertEquals("Male", personOne.getGender());
-        assertTrue(personOne.getEnabled());
+        Assertions.assertTrue(personOne.getEnabled());
 
-        PeopleDTO personFour = people.get(7);
+        PeopleDTO personFour = people.get(4);
 
         assertNotNull(personFour.getId());
-        assertTrue(personFour.getId() > 0);
+        Assertions.assertTrue(personFour.getId() > 0);
 
-        assertEquals("Muhamamd", personFour.getFirstName());
-        assertEquals("Ali", personFour.getLastName());
-        assertEquals("Kentucky - US", personFour.getAddress());
+        assertEquals("Brandyn", personFour.getFirstName());
+        assertEquals("Grasha", personFour.getLastName());
+        assertEquals("96 Mosinee Parkway", personFour.getAddress());
         assertEquals("Male", personFour.getGender());
-        assertTrue(personFour.getEnabled());
+        Assertions.assertTrue(personFour.getEnabled());
     }
 
     private void mockPerson() {
-        peopleDTO.setFirstName("Lt. Jose");
-        peopleDTO.setLastName("Gomes");
-        peopleDTO.setAddress("Vancouver - Canada");
-        peopleDTO.setGender("Male");
-        peopleDTO.setEnabled(true);
+        person.setFirstName("Linus");
+        person.setLastName("Torvalds");
+        person.setAddress("Helsinki - Finland");
+        person.setGender("Male");
+        person.setEnabled(true);
     }
 }

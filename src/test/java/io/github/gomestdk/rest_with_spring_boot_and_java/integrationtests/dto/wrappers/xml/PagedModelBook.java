@@ -8,6 +8,7 @@ import java.util.List;
 
 @XmlRootElement
 public class PagedModelBook {
+
     @XmlElement(name = "content")
     private List<BookDTO> content;
 

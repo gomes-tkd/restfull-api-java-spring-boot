@@ -2,9 +2,12 @@ package io.github.gomestdk.rest_with_spring_boot_and_java.integrationtests.dto.w
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import java.io.Serial;
 import java.io.Serializable;
 
 public class WrapperBookDTO implements Serializable {
+
+    @Serial
     private static final long serialVersionUID = 1L;
 
     @JsonProperty("_embedded")

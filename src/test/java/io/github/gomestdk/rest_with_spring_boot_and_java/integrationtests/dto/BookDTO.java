@@ -1,5 +1,6 @@
 package io.github.gomestdk.rest_with_spring_boot_and_java.integrationtests.dto;
 
+import java.io.Serial;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.Objects;
@@ -7,7 +8,9 @@ import java.util.Objects;
 import jakarta.xml.bind.annotation.XmlRootElement;
 
 @XmlRootElement
-public class BookDTO implements Serializable{
+public class BookDTO implements Serializable {
+
+  @Serial
   private static final long serialVersionUID = 1L;
 
   private long id;

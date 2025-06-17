@@ -1,4 +1,4 @@
-package io.github.gomestdk.rest_with_spring_boot_and_java.unittests.services;
+package io.github.gomestdk.rest_with_spring_boot_and_java.services;
 
 import io.github.gomestdk.rest_with_spring_boot_and_java.controllers.PeopleController;
 import io.github.gomestdk.rest_with_spring_boot_and_java.data.dto.PeopleDTO;
@@ -25,7 +25,7 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
 @Service
 public class PeopleService {
-    private Logger logger = LoggerFactory.getLogger(PeopleService.class.getName());
+    private final Logger logger = LoggerFactory.getLogger(PeopleService.class.getName());
 
     @Autowired
     PeopleRepository peopleRepository;
@@ -34,7 +34,8 @@ public class PeopleService {
     PagedResourcesAssembler<PeopleDTO> assembler;
 
     public PagedModel<EntityModel<PeopleDTO>> findAll(Pageable pageable) {
-        logger.info("Finding all people");
+        logger.info("Fetching all people with pagination: page={}, size={}, sort={}",
+                pageable.getPageNumber(), pageable.getPageSize(), pageable.getSort());
 
         Page<People> peopleList = peopleRepository.findAll(pageable);
         Page<PeopleDTO> peopleWithLinks = peopleList.map((People person) -> {
@@ -43,8 +44,7 @@ public class PeopleService {
             return dto;
         });
 
-//        List<PeopleDTO> peopleDTOList = parseListObjects(peopleRepository.findAll(), PeopleDTO.class);
-//        peopleDTOList.forEach(this::addHateoasLinks);
+        logger.info("Found {} people", peopleList.getTotalElements());
 
         Link findAllLink = WebMvcLinkBuilder.linkTo(
                 WebMvcLinkBuilder.methodOn(PeopleController.class).findAll(
@@ -56,7 +56,7 @@ public class PeopleService {
     }
 
     public PagedModel<EntityModel<PeopleDTO>> findPeopleByName(String firstName, Pageable pageable) {
-        logger.info("Finding people by name");
+        logger.info("Searching for people by name: '{}'", firstName);
 
         Page<People> peopleList = peopleRepository.findPeopleByName(firstName, pageable);
         Page<PeopleDTO> peopleWithLinks = peopleList.map((People person) -> {
@@ -65,8 +65,7 @@ public class PeopleService {
             return dto;
         });
 
-//        List<PeopleDTO> peopleDTOList = parseListObjects(peopleRepository.findAll(), PeopleDTO.class);
-//        peopleDTOList.forEach(this::addHateoasLinks);
+        logger.info("Found {} people with name containing '{}'", peopleList.getTotalElements(), firstName);
 
         Link findAllLink = WebMvcLinkBuilder.linkTo(
                 WebMvcLinkBuilder.methodOn(PeopleController.class).findAll(
@@ -79,40 +78,53 @@ public class PeopleService {
 
 
     public PeopleDTO findById(Long id) {
-        logger.info("Finding one person!");
+        logger.info("Fetching person with id={}", id);
 
         People entity = peopleRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("No records found for this ID!"));
+                .orElseThrow(() -> {
+                    logger.warn("Person not found with id={}", id);
+                    return new ResourceNotFoundException("No records found for this ID!");
+                });
 
         PeopleDTO dto = parseObject(entity, PeopleDTO.class);
         addHateoasLinks(dto);
+
+        logger.info("Person found: id={}, name={} {}", dto.getId(), dto.getFirstName(), dto.getLastName());
 
         return dto;
     }
 
     public PeopleDTO create(PeopleDTO person) {
         if (person == null) {
+            logger.error("Attempted to create a null PeopleDTO");
             throw new RequiredObjectIsNullException();
         }
 
-        logger.info("Creating one person");
+        logger.info("Creating person: {} {}", person.getFirstName(), person.getLastName());
+
         People entity = parseObject(person, People.class);
 
         PeopleDTO dto = parseObject(peopleRepository.save(entity), PeopleDTO.class);
         addHateoasLinks(dto);
+
+        logger.info("Person created with id={}", dto.getId());
 
         return dto;
     }
 
     public PeopleDTO update(PeopleDTO person) {
         if (person == null) {
+            logger.error("Attempted to update a null PeopleDTO");
             throw new RequiredObjectIsNullException();
         }
 
-        logger.info("Updating one person!");
+        logger.info("Updating person with id={}", person.getId());
 
         People entity = peopleRepository.findById(person.getId())
-                .orElseThrow(() -> new ResourceNotFoundException("No records found for this ID!"));
+                .orElseThrow(() -> {
+                    logger.warn("Person not found for update with id={}", person.getId());
+                    return new ResourceNotFoundException("No records found for this ID!");
+                });
 
         entity.setFirstName(person.getFirstName());
         entity.setLastName(person.getLastName());
@@ -122,30 +134,43 @@ public class PeopleService {
         PeopleDTO dto = parseObject(peopleRepository.save(entity), PeopleDTO.class);
         addHateoasLinks(dto);
 
+        logger.info("Person updated: id={}, name={} {}", dto.getId(), dto.getFirstName(), dto.getLastName());
+
         return dto;
     }
 
     @Transactional
     public PeopleDTO disablePerson(Long id) {
-        logger.info("Disabling one Person!");
+        logger.info("Disabling person with id={}", id);
 
         People entity = peopleRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("No records found for this ID!"));
+                .orElseThrow(() -> {
+                    logger.warn("Person not found for disable with id={}", id);
+                    return new ResourceNotFoundException("No records found for this ID!");
+                });
 
         peopleRepository.disablePerson(id);
 
         PeopleDTO dto = parseObject(entity, PeopleDTO.class);
         addHateoasLinks(dto);
+
+        logger.info("Person disabled: id={}", dto.getId());
+
         return dto;
     }
 
     public void delete(Long id) {
-        logger.info("Deleting one Person!");
+        logger.info("Attempting to delete person with id={}", id);
 
         People entity = peopleRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("No records found for this ID!"));
+                .orElseThrow(() -> {
+                    logger.warn("Person not found for deletion with id={}", id);
+                    return new ResourceNotFoundException("No records found for this ID!");
+                });
 
         peopleRepository.delete(entity);
+
+        logger.info("Person successfully deleted: id={}", id);
     }
 
     private void addHateoasLinks(PeopleDTO dto) {
