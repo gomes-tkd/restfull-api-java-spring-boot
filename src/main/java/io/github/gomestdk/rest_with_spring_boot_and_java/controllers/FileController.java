@@ -3,6 +3,7 @@ package io.github.gomestdk.rest_with_spring_boot_and_java.controllers;
 import io.github.gomestdk.rest_with_spring_boot_and_java.controllers.docs.FileControllerDocs;
 import io.github.gomestdk.rest_with_spring_boot_and_java.data.dto.UploadFileResponseDTO;
 import io.github.gomestdk.rest_with_spring_boot_and_java.unittests.services.FileStorageService;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -20,6 +21,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/file/v1")
+@Tag(name = "File Endpoint", description = "Operações para upload e download de arquivos")
 public class FileController implements FileControllerDocs {
     private static final Logger logger = LoggerFactory.getLogger(FileController.class);
 

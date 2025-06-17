@@ -19,7 +19,6 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
-@Tag(name = "File Endpoint", description = "Operações para upload e download de arquivos")
 public interface FileControllerDocs {
 
     @Operation(
