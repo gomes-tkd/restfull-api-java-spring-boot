@@ -25,6 +25,7 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
 @Service
 public class PeopleService {
+
     private final Logger logger = LoggerFactory.getLogger(PeopleService.class.getName());
 
     @Autowired
@@ -38,42 +39,20 @@ public class PeopleService {
                 pageable.getPageNumber(), pageable.getPageSize(), pageable.getSort());
 
         Page<People> peopleList = peopleRepository.findAll(pageable);
-        Page<PeopleDTO> peopleWithLinks = peopleList.map((People person) -> {
-            PeopleDTO dto = parseObject(person, PeopleDTO.class);
-            addHateoasLinks(dto);
-            return dto;
-        });
 
         logger.info("Found {} people", peopleList.getTotalElements());
 
-        Link findAllLink = WebMvcLinkBuilder.linkTo(
-                WebMvcLinkBuilder.methodOn(PeopleController.class).findAll(
-                        pageable.getPageNumber(), pageable.getPageSize(), String.valueOf(pageable.getSort())
-                )
-        ).withSelfRel();
-
-        return assembler.toModel(peopleWithLinks, findAllLink);
+        return buildPagedModel(pageable, peopleList);
     }
 
     public PagedModel<EntityModel<PeopleDTO>> findPeopleByName(String firstName, Pageable pageable) {
         logger.info("Searching for people by name: '{}'", firstName);
 
         Page<People> peopleList = peopleRepository.findPeopleByName(firstName, pageable);
-        Page<PeopleDTO> peopleWithLinks = peopleList.map((People person) -> {
-            PeopleDTO dto = parseObject(person, PeopleDTO.class);
-            addHateoasLinks(dto);
-            return dto;
-        });
 
         logger.info("Found {} people with name containing '{}'", peopleList.getTotalElements(), firstName);
 
-        Link findAllLink = WebMvcLinkBuilder.linkTo(
-                WebMvcLinkBuilder.methodOn(PeopleController.class).findAll(
-                        pageable.getPageNumber(), pageable.getPageSize(), String.valueOf(pageable.getSort())
-                )
-        ).withSelfRel();
-
-        return assembler.toModel(peopleWithLinks, findAllLink);
+        return buildPagedModel(pageable, peopleList);
     }
 
 
@@ -173,12 +152,32 @@ public class PeopleService {
         logger.info("Person successfully deleted: id={}", id);
     }
 
+    private PagedModel<EntityModel<PeopleDTO>> buildPagedModel(Pageable pageable, Page<People> peopleList) {
+        Page<PeopleDTO> peopleWithLinks = peopleList.map((People person) -> {
+            PeopleDTO dto = parseObject(person, PeopleDTO.class);
+            addHateoasLinks(dto);
+            return dto;
+        });
+
+        Link findAllLink = WebMvcLinkBuilder.linkTo(
+                WebMvcLinkBuilder.methodOn(PeopleController.class).findAll(
+                        pageable.getPageNumber(), pageable.getPageSize(), String.valueOf(pageable.getSort())
+                )
+        ).withSelfRel();
+
+        return assembler.toModel(peopleWithLinks, findAllLink);
+    }
+
     private void addHateoasLinks(PeopleDTO dto) {
-        dto.add(linkTo(methodOn(PeopleController.class).findAll(0, 12, "asc")).withRel("findAll").withType("GET"));
         dto.add(linkTo(methodOn(PeopleController.class).findById(dto.getId())).withSelfRel().withType("GET"));
+        dto.add(linkTo(methodOn(PeopleController.class).findAll(0, 12, "asc")).withRel("findAll")
+                .withType("GET"));
+        dto.add(linkTo(methodOn(PeopleController.class).findByName("", 1, 12, "asc"))
+                .withRel("findByName").withType("GET"));
         dto.add(linkTo(methodOn(PeopleController.class).create(dto)).withRel("create").withType("POST"));
         dto.add(linkTo(methodOn(PeopleController.class).update(dto)).withRel("update").withType("PUT"));
-        dto.add(linkTo(methodOn(PeopleController.class).disablePerson(dto.getId())).withRel("disable").withType("PATCH"));
+        dto.add(linkTo(methodOn(PeopleController.class).disablePerson(dto.getId())).withRel("disable")
+                .withType("PATCH"));
         dto.add(linkTo(methodOn(PeopleController.class).delete(dto.getId())).withRel("delete").withType("DELETE"));
     }
 }

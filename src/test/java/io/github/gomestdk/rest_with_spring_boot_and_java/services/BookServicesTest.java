@@ -4,7 +4,7 @@ import io.github.gomestdk.rest_with_spring_boot_and_java.data.dto.BookDTO;
 import io.github.gomestdk.rest_with_spring_boot_and_java.exception.RequiredObjectIsNullException;
 import io.github.gomestdk.rest_with_spring_boot_and_java.model.Book;
 import io.github.gomestdk.rest_with_spring_boot_and_java.repository.BookRepository;
-import io.github.gomestdk.rest_with_spring_boot_and_java.unittests.mapper.mocks.MockBook;
+import io.github.gomestdk.rest_with_spring_boot_and_java.unittest.mocks.MockBook;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;

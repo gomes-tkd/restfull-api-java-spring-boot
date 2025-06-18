@@ -1,8 +1,8 @@
-package io.github.gomestdk.rest_with_spring_boot_and_java.unittests.mapper;
+package io.github.gomestdk.rest_with_spring_boot_and_java.unittest;
 
 import io.github.gomestdk.rest_with_spring_boot_and_java.data.dto.PeopleDTO;
 import io.github.gomestdk.rest_with_spring_boot_and_java.model.People;
-import io.github.gomestdk.rest_with_spring_boot_and_java.unittests.mapper.mocks.MockPerson;
+import io.github.gomestdk.rest_with_spring_boot_and_java.unittest.mocks.MockPerson;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 

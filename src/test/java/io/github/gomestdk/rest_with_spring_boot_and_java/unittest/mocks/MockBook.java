@@ -1,4 +1,4 @@
-package io.github.gomestdk.rest_with_spring_boot_and_java.unittests.mapper.mocks;
+package io.github.gomestdk.rest_with_spring_boot_and_java.unittest.mocks;
 
 import io.github.gomestdk.rest_with_spring_boot_and_java.data.dto.BookDTO;
 import io.github.gomestdk.rest_with_spring_boot_and_java.model.Book;
