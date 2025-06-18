@@ -13,6 +13,9 @@ import org.springframework.hateoas.PagedModel;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.util.List;
 
 @CrossOrigin(origins = "http://localhost:8080")
 @RestController
@@ -90,6 +93,19 @@ public class PeopleController implements PeopleControllerDocs {
     @Override
     public PeopleDTO create(@RequestBody PeopleDTO person) {
         return peopleService.create(person);
+    }
+
+    @PostMapping(
+            value = "/importPeopleDataFromFile",
+            produces = {
+                    MediaType.APPLICATION_JSON_VALUE,
+                    MediaType.APPLICATION_XML_VALUE,
+                    MediaType.APPLICATION_YAML_VALUE
+            }
+    )
+    @Override
+    public List<PeopleDTO> importPeopleDataFromFile(@RequestParam("file") MultipartFile file) {
+        return peopleService.importPeopleDataFromFile(file);
     }
 
     @PutMapping(

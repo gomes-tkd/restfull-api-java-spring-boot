@@ -2,8 +2,12 @@ package io.github.gomestdk.rest_with_spring_boot_and_java.services;
 
 import io.github.gomestdk.rest_with_spring_boot_and_java.controllers.PeopleController;
 import io.github.gomestdk.rest_with_spring_boot_and_java.data.dto.PeopleDTO;
+import io.github.gomestdk.rest_with_spring_boot_and_java.exception.BadRequestException;
+import io.github.gomestdk.rest_with_spring_boot_and_java.exception.FileStorageException;
 import io.github.gomestdk.rest_with_spring_boot_and_java.exception.RequiredObjectIsNullException;
 import io.github.gomestdk.rest_with_spring_boot_and_java.exception.ResourceNotFoundException;
+import io.github.gomestdk.rest_with_spring_boot_and_java.file.importer.contract.FileImporter;
+import io.github.gomestdk.rest_with_spring_boot_and_java.file.importer.factory.FileImporterFactory;
 import io.github.gomestdk.rest_with_spring_boot_and_java.model.People;
 import io.github.gomestdk.rest_with_spring_boot_and_java.repository.PeopleRepository;
 import jakarta.transaction.Transactional;
@@ -18,6 +22,12 @@ import org.springframework.hateoas.Link;
 import org.springframework.hateoas.PagedModel;
 import org.springframework.hateoas.server.mvc.WebMvcLinkBuilder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.List;
+import java.util.Optional;
 
 import static io.github.gomestdk.rest_with_spring_boot_and_java.mapper.ObjectMapper.parseObject;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
@@ -33,6 +43,9 @@ public class PeopleService {
 
     @Autowired
     PagedResourcesAssembler<PeopleDTO> assembler;
+
+    @Autowired
+    FileImporterFactory fileImporter;
 
     public PagedModel<EntityModel<PeopleDTO>> findAll(Pageable pageable) {
         logger.info("Fetching all people with pagination: page={}, size={}, sort={}",
@@ -89,6 +102,45 @@ public class PeopleService {
         logger.info("Person created with id={}", dto.getId());
 
         return dto;
+    }
+
+    public List<PeopleDTO> importPeopleDataFromFile(MultipartFile file) {
+        if (file.isEmpty()) {
+            throw new BadRequestException("Please set a Valid File");
+        }
+
+        logger.info("Starting import of People data from file: '{}', size: {} bytes",
+                file.getOriginalFilename(), file.getSize());
+
+
+        try (InputStream inputStream = file.getInputStream()) {
+            String fileName = Optional.ofNullable(file.getOriginalFilename())
+                    .orElseThrow(() -> new BadRequestException("File name cannot be null!"));
+
+            FileImporter importer = this.fileImporter.getImporter(fileName);
+
+            List<People> entities = importer.importFile(inputStream)
+                    .stream()
+                    .map(peopleDTO -> peopleRepository.save(parseObject(peopleDTO, People.class)))
+                    .toList();
+
+            return entities.stream().map(entity -> {
+                PeopleDTO dto = parseObject(entity, PeopleDTO.class);
+                addHateoasLinks(dto);
+                return dto;
+            }).toList();
+
+        } catch (IOException e) {
+            logger.error("Error reading the file: '{}'. Error: {}", file.getOriginalFilename(), e.getMessage());
+
+            throw new FileStorageException("Error processing the file due to I/O issue.");
+
+        } catch (Exception e) {
+            logger.error("Error importing People data from file: '{}'. Error: {}",
+                    file.getOriginalFilename(), e.getMessage());
+
+            throw new FileStorageException("Error processing the file!");
+        }
     }
 
     public PeopleDTO update(PeopleDTO person) {
