@@ -13,10 +13,12 @@ import java.util.List;
 
 @Component
 public class CsvImporter implements FileImporter {
+
     @Override
     public List<PeopleDTO> importFile(InputStream inputStream) throws Exception {
         CSVFormat csvFormat = CSVFormat.Builder.create()
-                .setHeader().setSkipHeaderRecord(true)
+                .setHeader()
+                .setSkipHeaderRecord(true)
                 .setIgnoreEmptyLines(true)
                 .setTrim(true)
                 .build();
@@ -29,15 +31,13 @@ public class CsvImporter implements FileImporter {
         List<PeopleDTO> people = new ArrayList<>();
 
         for (CSVRecord record : records) {
-            PeopleDTO peopleDTO = new PeopleDTO();
-
-            peopleDTO.setFirstName(record.get("first_name"));
-            peopleDTO.setLastName(record.get("last_name"));
-            peopleDTO.setAddress(record.get("address"));
-            peopleDTO.setGender(record.get("gender"));
-            peopleDTO.setEnabled(true);
-
-            people.add(peopleDTO);
+            PeopleDTO person = new PeopleDTO();
+            person.setFirstName(record.get("first_name"));
+            person.setLastName(record.get("last_name"));
+            person.setAddress(record.get("address"));
+            person.setGender(record.get("gender"));
+            person.setEnabled(true);
+            people.add(person);
         }
 
         return people;

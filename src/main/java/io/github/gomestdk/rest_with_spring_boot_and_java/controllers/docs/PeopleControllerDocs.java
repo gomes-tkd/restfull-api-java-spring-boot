@@ -168,7 +168,7 @@ public interface PeopleControllerDocs {
                     @ApiResponse(description = "Internal Server Error", responseCode = "500", content = @Content)
             }
     )
-    List<PeopleDTO> importPeopleDataFromFile(@RequestParam("file") MultipartFile file);
+    List<PeopleDTO> importPeopleDataFromFile(MultipartFile file);
 
     @Operation(
             summary = "Updates a person's information",

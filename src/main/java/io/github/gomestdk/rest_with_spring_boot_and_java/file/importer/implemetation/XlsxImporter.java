@@ -22,9 +22,7 @@ public class XlsxImporter implements FileImporter {
             XSSFSheet sheet = workbook.getSheetAt(0);
             Iterator<Row> rowIterator = sheet.iterator();
 
-            if (rowIterator.hasNext()) {
-                rowIterator.next();
-            }
+            if (rowIterator.hasNext()) rowIterator.next(); // Skip header
 
             return parseRowsToPeopleDtoList(rowIterator);
         }
@@ -35,7 +33,6 @@ public class XlsxImporter implements FileImporter {
 
         while (rowIterator.hasNext()) {
             Row row = rowIterator.next();
-
             if (isRowValid(row)) {
                 people.add(parseRowToPeopleDto(row));
             }
@@ -45,18 +42,18 @@ public class XlsxImporter implements FileImporter {
     }
 
     private PeopleDTO parseRowToPeopleDto(Row row) {
-        PeopleDTO peopleDTO = new PeopleDTO();
+        PeopleDTO dto = new PeopleDTO();
 
-        peopleDTO.setFirstName(row.getCell(0).getStringCellValue());
-        peopleDTO.setLastName(row.getCell(1).getStringCellValue());
-        peopleDTO.setAddress(row.getCell(2).getStringCellValue());
-        peopleDTO.setGender(row.getCell(3).getStringCellValue());
-        peopleDTO.setEnabled(true);
+        dto.setFirstName(row.getCell(0).getStringCellValue());
+        dto.setLastName(row.getCell(1).getStringCellValue());
+        dto.setAddress(row.getCell(2).getStringCellValue());
+        dto.setGender(row.getCell(3).getStringCellValue());
+        dto.setEnabled(true);
 
-        return peopleDTO;
+        return dto;
     }
 
-    private static boolean isRowValid(Row row) {
+    private boolean isRowValid(Row row) {
         return row.getCell(0) != null && row.getCell(0).getCellType() != CellType.BLANK;
     }
 }

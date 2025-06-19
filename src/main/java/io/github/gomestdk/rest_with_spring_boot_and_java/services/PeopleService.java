@@ -115,20 +115,21 @@ public class PeopleService {
 
         try (InputStream inputStream = file.getInputStream()) {
             String fileName = Optional.ofNullable(file.getOriginalFilename())
-                    .orElseThrow(() -> new BadRequestException("File name cannot be null!"));
+                    .orElseThrow(() -> new IllegalArgumentException("File name cannot be null"));
 
             FileImporter importer = this.fileImporter.getImporter(fileName);
 
-            List<People> entities = importer.importFile(inputStream)
-                    .stream()
-                    .map(peopleDTO -> peopleRepository.save(parseObject(peopleDTO, People.class)))
+            List<People> entities = importer.importFile(inputStream).stream()
+                    .map(dto -> peopleRepository.save(parseObject(dto, People.class)))
                     .toList();
 
-            return entities.stream().map(entity -> {
-                PeopleDTO dto = parseObject(entity, PeopleDTO.class);
-                addHateoasLinks(dto);
-                return dto;
-            }).toList();
+            return entities.stream()
+                    .map(entity -> {
+                        PeopleDTO dto = parseObject(entity, PeopleDTO.class);
+                        addHateoasLinks(dto);
+                        return dto;
+                    })
+                    .toList();
 
         } catch (IOException e) {
             logger.error("Error reading the file: '{}'. Error: {}", file.getOriginalFilename(), e.getMessage());
