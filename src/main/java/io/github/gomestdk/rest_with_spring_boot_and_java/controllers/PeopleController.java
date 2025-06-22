@@ -2,19 +2,25 @@ package io.github.gomestdk.rest_with_spring_boot_and_java.controllers;
 
 import io.github.gomestdk.rest_with_spring_boot_and_java.controllers.docs.PeopleControllerDocs;
 import io.github.gomestdk.rest_with_spring_boot_and_java.data.dto.PeopleDTO;
+import io.github.gomestdk.rest_with_spring_boot_and_java.file.exporter.MediaTypesFileExporter;
 import io.github.gomestdk.rest_with_spring_boot_and_java.services.PeopleService;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.Resource;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.Sort.Direction;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.PagedModel;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.List;
 
 @CrossOrigin(origins = "http://localhost:8080")
@@ -142,5 +148,43 @@ public class PeopleController implements PeopleControllerDocs {
     public ResponseEntity<?> delete(@PathVariable("id") Long id) {
         peopleService.delete(id);
         return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping(
+            value = "/exportPage",
+            produces = {
+                MediaTypesFileExporter.APPLICATION_CSV_VALUE,
+                MediaTypesFileExporter.APPLICATION_XLSX_VALUE
+            }
+    )
+    @Override
+    public ResponseEntity<Resource> exportPage(
+            @RequestParam(value = "page", defaultValue = "0") Integer page,
+            @RequestParam(value = "size", defaultValue = "12") Integer size,
+            @RequestParam(value = "direction", defaultValue = "asc") String direction,
+            HttpServletRequest request
+
+    ) {
+        Direction sortDirection = "desc".equalsIgnoreCase(direction) ? Direction.DESC : Direction.ASC;
+        Pageable pageable = PageRequest.of(page, size, Sort.by(sortDirection, "firstName"));
+
+        String acceptHeader = request.getHeader(HttpHeaders.ACCEPT);
+
+        Resource file = peopleService.exportPage(pageable, acceptHeader);
+
+        String contentType = acceptHeader != null ? acceptHeader : "application/octet-stream";
+
+        String fileExtension = MediaTypesFileExporter.APPLICATION_XLSX_VALUE
+                .equalsIgnoreCase(acceptHeader) ? ".xlsx" : ".csv" ;
+
+
+        String fileName = "people_exported" + fileExtension;
+
+        return ResponseEntity.ok()
+                .contentType(MediaType.parseMediaType(contentType))
+                .header(
+                        HttpHeaders.CONTENT_DISPOSITION,
+                        "attachment; filename=\"" + fileName + "\"")
+                .body(file);
     }
 }

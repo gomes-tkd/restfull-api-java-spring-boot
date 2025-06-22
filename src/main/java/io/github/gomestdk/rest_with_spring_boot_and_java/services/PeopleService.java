@@ -6,6 +6,8 @@ import io.github.gomestdk.rest_with_spring_boot_and_java.exception.BadRequestExc
 import io.github.gomestdk.rest_with_spring_boot_and_java.exception.FileStorageException;
 import io.github.gomestdk.rest_with_spring_boot_and_java.exception.RequiredObjectIsNullException;
 import io.github.gomestdk.rest_with_spring_boot_and_java.exception.ResourceNotFoundException;
+import io.github.gomestdk.rest_with_spring_boot_and_java.file.exporter.contract.FileExporter;
+import io.github.gomestdk.rest_with_spring_boot_and_java.file.exporter.factory.FileExporterFactory;
 import io.github.gomestdk.rest_with_spring_boot_and_java.file.importer.contract.FileImporter;
 import io.github.gomestdk.rest_with_spring_boot_and_java.file.importer.factory.FileImporterFactory;
 import io.github.gomestdk.rest_with_spring_boot_and_java.model.People;
@@ -14,6 +16,7 @@ import jakarta.transaction.Transactional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.Resource;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PagedResourcesAssembler;
@@ -47,6 +50,9 @@ public class PeopleService {
     @Autowired
     FileImporterFactory fileImporter;
 
+    @Autowired
+    private FileExporterFactory fileExporter;
+
     public PagedModel<EntityModel<PeopleDTO>> findAll(Pageable pageable) {
         logger.info("Fetching all people with pagination: page={}, size={}, sort={}",
                 pageable.getPageNumber(), pageable.getPageSize(), pageable.getSort());
@@ -68,7 +74,6 @@ public class PeopleService {
         return buildPagedModel(pageable, peopleList);
     }
 
-
     public PeopleDTO findById(Long id) {
         logger.info("Fetching person with id={}", id);
 
@@ -84,6 +89,25 @@ public class PeopleService {
         logger.info("Person found: id={}, name={} {}", dto.getId(), dto.getFirstName(), dto.getLastName());
 
         return dto;
+    }
+
+    public Resource exportPage(Pageable pageable, String acceptHeader) {
+        logger.info("Exporting all people with pagination: page={}, size={}, sort={}",
+                pageable.getPageNumber(), pageable.getPageSize(), pageable.getSort());
+
+        List<PeopleDTO> peopleList = peopleRepository.findAll(pageable)
+                .map(person -> parseObject(person, PeopleDTO.class))
+                .getContent();
+
+        logger.info("Found {} people", peopleList.size());
+
+        try {
+            FileExporter exporter = this.fileExporter.getExporter(acceptHeader);
+            return exporter.exportFile(peopleList);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+
     }
 
     public PeopleDTO create(PeopleDTO person) {
@@ -228,9 +252,17 @@ public class PeopleService {
         dto.add(linkTo(methodOn(PeopleController.class).findByName("", 1, 12, "asc"))
                 .withRel("findByName").withType("GET"));
         dto.add(linkTo(methodOn(PeopleController.class).create(dto)).withRel("create").withType("POST"));
+        dto.add(linkTo(methodOn(PeopleController.class)).slash("importPeopleDataFromFile")
+                .withRel("importPeopleDataFromFile").withType("POST"));
         dto.add(linkTo(methodOn(PeopleController.class).update(dto)).withRel("update").withType("PUT"));
         dto.add(linkTo(methodOn(PeopleController.class).disablePerson(dto.getId())).withRel("disable")
                 .withType("PATCH"));
         dto.add(linkTo(methodOn(PeopleController.class).delete(dto.getId())).withRel("delete").withType("DELETE"));
+
+        dto.add(linkTo(methodOn(PeopleController.class)
+                .exportPage(0, 12, "asc", null))
+                .withRel("exportPage")
+                .withType("GET")
+                .withTitle("Export People"));
     }
 }

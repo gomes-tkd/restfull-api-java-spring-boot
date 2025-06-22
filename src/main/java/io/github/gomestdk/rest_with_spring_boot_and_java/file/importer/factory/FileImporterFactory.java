@@ -19,11 +19,13 @@ public class FileImporterFactory {
     private ApplicationContext applicationContext;
 
     public FileImporter getImporter(String fileName) throws Exception {
+        logger.info("Processing export with Accept header: {}", fileName);
         if (fileName.endsWith(".xlsx")) {
             return applicationContext.getBean(XlsxImporter.class);
         } else if (fileName.endsWith(".csv")) {
             return applicationContext.getBean(CsvImporter.class);
         } else {
+            logger.error("Invalid file format requested: {}", fileName);
             throw new BadRequestException("Invalid File Format!");
         }
     }
