@@ -33,9 +33,12 @@
 		<testcontainers.version>1.21.0</testcontainers.version>
 		<apache.poi.version>5.4.1</apache.poi.version>
 		<commons.csv.version>1.14.0</commons.csv.version>
+		<jasperreports.version>7.0.3</jasperreports.version>
+		<jasperreports.fonts.version>7.0.3</jasperreports.fonts.version>
+		<jasperreports.pdf.version>7.0.3</jasperreports.pdf.version>
+		<zxing.version>3.5.3</zxing.version>
 	</properties>
 	<dependencies>
-
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-actuator</artifactId>
@@ -76,6 +79,37 @@
 			<artifactId>poi-ooxml</artifactId>
 			<version>${apache.poi.version}</version>
 		</dependency>
+
+		<dependency>
+			<groupId>net.sf.jasperreports</groupId>
+			<artifactId>jasperreports</artifactId>
+			<version>${jasperreports.version}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>net.sf.jasperreports</groupId>
+			<artifactId>jasperreports-fonts</artifactId>
+			<version>${jasperreports.fonts.version}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>net.sf.jasperreports</groupId>
+			<artifactId>jasperreports-pdf</artifactId>
+			<version>${jasperreports.pdf.version}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>com.google.zxing</groupId>
+			<artifactId>core</artifactId>
+			<version>${zxing.version}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>com.google.zxing</groupId>
+			<artifactId>javase</artifactId>
+			<version>${zxing.version}</version>
+		</dependency>
+
 		<dependency>
 			<groupId>com.mysql</groupId>
 			<artifactId>mysql-connector-j</artifactId>
@@ -134,7 +168,7 @@
 				<configuration>
 					<url>jdbc:mysql://localhost:3306/rest_with_spring_boot?useTimezone=true&amp;serverTimezone=UTC</url>
 					<user>gomes-tkd</user>
-					<password>admin1234</password>
+					<password>admin123</password>
 				</configuration>
 				<dependencies>
 					<dependency>

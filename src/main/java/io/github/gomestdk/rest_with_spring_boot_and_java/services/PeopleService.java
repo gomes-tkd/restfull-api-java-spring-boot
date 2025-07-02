@@ -6,7 +6,7 @@ import io.github.gomestdk.rest_with_spring_boot_and_java.exception.BadRequestExc
 import io.github.gomestdk.rest_with_spring_boot_and_java.exception.FileStorageException;
 import io.github.gomestdk.rest_with_spring_boot_and_java.exception.RequiredObjectIsNullException;
 import io.github.gomestdk.rest_with_spring_boot_and_java.exception.ResourceNotFoundException;
-import io.github.gomestdk.rest_with_spring_boot_and_java.file.exporter.contract.FileExporter;
+import io.github.gomestdk.rest_with_spring_boot_and_java.file.exporter.contract.ExportPeople;
 import io.github.gomestdk.rest_with_spring_boot_and_java.file.exporter.factory.FileExporterFactory;
 import io.github.gomestdk.rest_with_spring_boot_and_java.file.importer.contract.FileImporter;
 import io.github.gomestdk.rest_with_spring_boot_and_java.file.importer.factory.FileImporterFactory;
@@ -102,12 +102,33 @@ public class PeopleService {
         logger.info("Found {} people", peopleList.size());
 
         try {
-            FileExporter exporter = this.fileExporter.getExporter(acceptHeader);
+            ExportPeople exporter = this.fileExporter.getExporter(acceptHeader);
             return exporter.exportFile(peopleList);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
 
+    }
+
+    public Resource exportPerson(Long id, String acceptHeader) {
+        logger.info("Exporting data of one person with id={}", id);
+
+        PeopleDTO personDTO = peopleRepository.findById(id)
+                .map(entity -> parseObject(entity, PeopleDTO.class))
+                .orElseThrow(() -> {
+                    logger.warn("Person not found with id={}", id);
+                    return new ResourceNotFoundException("No records found for this ID!");
+                });
+
+        addHateoasLinks(personDTO);
+        logger.info("Person found: id={}, name={} {}", personDTO.getId(), personDTO.getFirstName(), personDTO.getLastName());
+
+        try {
+            ExportPeople exporter = this.fileExporter.getExporter(acceptHeader);
+            return exporter.exportPeople(personDTO);
+        } catch (Exception e) {
+            throw new RuntimeException("Error during file export!", e);
+        }
     }
 
     public PeopleDTO create(PeopleDTO person) {

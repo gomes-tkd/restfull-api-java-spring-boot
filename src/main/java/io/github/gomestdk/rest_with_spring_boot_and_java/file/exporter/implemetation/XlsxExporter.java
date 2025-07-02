@@ -1,7 +1,7 @@
 package io.github.gomestdk.rest_with_spring_boot_and_java.file.exporter.implemetation;
 
 import io.github.gomestdk.rest_with_spring_boot_and_java.data.dto.PeopleDTO;
-import io.github.gomestdk.rest_with_spring_boot_and_java.file.exporter.contract.FileExporter;
+import io.github.gomestdk.rest_with_spring_boot_and_java.file.exporter.contract.ExportPeople;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.core.io.ByteArrayResource;
@@ -12,7 +12,7 @@ import java.io.ByteArrayOutputStream;
 import java.util.List;
 
 @Component
-public class XlsxExporter implements FileExporter {
+public class XlsxExporter implements ExportPeople {
 
     @Override
     public Resource exportFile(List<PeopleDTO> peopleDTOList) throws Exception {
@@ -50,6 +50,11 @@ public class XlsxExporter implements FileExporter {
 
             return new ByteArrayResource(outputStream.toByteArray());
         }
+    }
+
+    @Override
+    public Resource exportPeople(PeopleDTO people) throws Exception {
+        return null;
     }
 
     private CellStyle createHeaderCellStyle(Workbook workbook) {

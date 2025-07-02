@@ -1,7 +1,7 @@
 package io.github.gomestdk.rest_with_spring_boot_and_java.file.exporter.implemetation;
 
 import io.github.gomestdk.rest_with_spring_boot_and_java.data.dto.PeopleDTO;
-import io.github.gomestdk.rest_with_spring_boot_and_java.file.exporter.contract.FileExporter;
+import io.github.gomestdk.rest_with_spring_boot_and_java.file.exporter.contract.ExportPeople;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVPrinter;
 import org.springframework.core.io.ByteArrayResource;
@@ -14,7 +14,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.List;
 
 @Component
-public class CsvExporter implements FileExporter {
+public class CsvExporter implements ExportPeople {
 
     @Override
     public Resource exportFile(List<PeopleDTO> peopleDTOList) throws Exception {
@@ -40,5 +40,10 @@ public class CsvExporter implements FileExporter {
         }
 
         return new ByteArrayResource(outputStream.toByteArray());
+    }
+
+    @Override
+    public Resource exportPeople(PeopleDTO people) throws Exception {
+        return null;
     }
 }

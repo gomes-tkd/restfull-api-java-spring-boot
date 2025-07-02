@@ -5,6 +5,7 @@ import org.springframework.core.io.Resource;
 
 import java.util.List;
 
-public interface FileExporter {
+public interface ExportPeople {
     Resource exportFile(List<PeopleDTO> people) throws Exception;
+    Resource exportPeople(PeopleDTO people) throws Exception;
 }

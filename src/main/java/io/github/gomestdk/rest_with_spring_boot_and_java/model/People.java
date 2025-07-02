@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 
 import java.io.Serial;
 import java.io.Serializable;
+import java.util.List;
 import java.util.Objects;
 
 @Entity
@@ -31,6 +32,20 @@ public class People implements Serializable {
 
     @Column(nullable = false)
     private Boolean enabled;
+
+    @Column(name = "wikipedia_profile_url", length = 255)
+    private String profileUrl;
+
+    @Column(name = "photo_url", length = 255)
+    private String photoUrl;
+
+    @ManyToMany(fetch = FetchType.EAGER)
+    @JoinTable(
+            name = "people_books",
+            joinColumns = @JoinColumn(name = "people_id"),
+            inverseJoinColumns = @JoinColumn(name = "book_id")
+    )
+    private List<Book> books;
 
     public People() { }
 
@@ -82,15 +97,39 @@ public class People implements Serializable {
         this.enabled = enabled;
     }
 
+    public String getProfileUrl() {
+        return profileUrl;
+    }
+
+    public void setProfileUrl(String profileUrl) {
+        this.profileUrl = profileUrl;
+    }
+
+    public String getPhotoUrl() {
+        return photoUrl;
+    }
+
+    public void setPhotoUrl(String photoUrl) {
+        this.photoUrl = photoUrl;
+    }
+
+    public List<Book> getBooks() {
+        return books;
+    }
+
+    public void setBooks(List<Book> books) {
+        this.books = books;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (o == null || getClass() != o.getClass()) return false;
         People people = (People) o;
-        return id == people.id && Objects.equals(firstName, people.firstName) && Objects.equals(lastName, people.lastName) && Objects.equals(address, people.address) && Objects.equals(gender, people.gender) && Objects.equals(enabled, people.enabled);
+        return id == people.id && Objects.equals(firstName, people.firstName) && Objects.equals(lastName, people.lastName) && Objects.equals(address, people.address) && Objects.equals(gender, people.gender) && Objects.equals(enabled, people.enabled) && Objects.equals(profileUrl, people.profileUrl) && Objects.equals(photoUrl, people.photoUrl) && Objects.equals(books, people.books);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, firstName, lastName, address, gender, enabled);
+        return Objects.hash(id, firstName, lastName, address, gender, enabled, profileUrl, photoUrl, books);
     }
 }
